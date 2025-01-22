@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOLX Clicker Game</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background: radial-gradient(circle, rgba(75,0,130,1) 0%, rgba(0,0,0,1) 100%);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            color: white;
+            transition: background 0.5s ease-in-out;
+        }
+        .container {
+            margin-top: 80px;
+            font-size: 18px;
+        }
+        h1 {
+            font-size: 60px;
+            text-shadow: 0px 0px 15px rgba(255, 255, 255, 0.8);
+            animation: fadeIn 2s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .coin {
+            width: 180px;
+            cursor: pointer;
+            margin: 30px auto;
+            transition: transform 0.2s ease-in-out, box-shadow 0.3s;
+            animation: bounce 1s infinite;
+        }
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
+        }
+        .coin:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+            animation: spin 0.8s ease-out;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .stats {
+            font-size: 24px;
+            margin: 30px;
+            font-weight: bold;
+            text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.7);
+        }
+        button {
+            background-color: #ff4b5c;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        button:hover {
+            background-color: #ff7a89;
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
+        }
+        button:active {
+            transform: scale(1);
+        }
+        .background-change {
+            margin-top: 30px;
+            background-color: #ffac33;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        .stats-container {
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+        }
+        .stat-item {
+            font-size: 28px;
+            text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+        }
+        .level-bar {
+            width: 80%;
+            height: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            margin: 20px auto;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .level-bar-inner {
+            height: 100%;
+            background-color: #28a745;
+            transition: width 0.5s ease;
+        }
+        .button-shop {
+            background-color: #28a745;
+        }
+        .button-shop:hover {
+            background-color: #218838;
+        }
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .coin {
+                width: 150px;
+            }
+            h1 {
+                font-size: 45px;
+            }
+            button {
+                font-size: 18px;
+                padding: 15px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LOLX Clicker Game</h1>
+        <p class="stats">SCORE: <span id="score">0</span></p>
+        <div class="level-bar">
+            <div class="level-bar-inner" id="levelBar"></div>
+        </div>
+        <img src="https://via.placeholder.com/180?text=LOLX" alt="Coin" class="coin" id="coin">
+        <div class="stats-container">
+            <div class="stat-item">Auto Clickers: <span id="autoClickers">0</span></div>
+            <div class="stat-item">Coin Skins: <span id="coinSkins">1</span></div>
+            <div class="stat-item">Level: <span id="level">1</span></div>
+        </div>
+        <br>
+        <button onclick="buyAutoClicker()">Buy Auto Clicker (Cost: 50)</button>
+        <button onclick="changeSkin()">Change Coin Skin (Cost: 100)</button>
+        <div class="background-change">
+            <button onclick="changeBackground()">Change Background (Cost: 200)</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let autoClickers = 0;
+        let coinSkins = 1;
+        let level = 1;
+        let levelXP = 100;
+        let backgroundChanges = 0;
+
+        const scoreElement = document.getElementById('score');
+        const autoClickersElement = document.getElementById('autoClickers');
+        const coinSkinsElement = document.getElementById('coinSkins');
+        const levelElement = document.getElementById('level');
+        const levelBar = document.getElementById('levelBar');
+        const coin = document.getElementById('coin');
+        const body = document.body;
+
+        const clickSound = new Audio('https://www.soundjay.com/button/beep-07.wav');
+        const upgradeSound = new Audio('https://www.soundjay.com/button/button-3.wav');
+        const backgroundChangeSound = new Audio('https://www.soundjay.com/button/beep-09.wav');
+
+        coin.addEventListener('click', () => {
+            score += 1;
+            clickSound.play();
+            updateScore();
+            checkLevelUp();
+            coin.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                coin.style.transform = 'scale(1)';
+            }, 200);
+        });
+
+        function updateScore() {
+            scoreElement.textContent = score;
+        }
+
+        function checkLevelUp() {
+            if (score >= levelXP) {
+                level += 1;
+                levelXP += 100;
+                levelElement.textContent = level;
+                levelBar.style.width = ${(score / levelXP) * 100}%;
+            }
+        }
+
+        function buyAutoClicker() {
+            if (score >= 50) {
+                score -= 50;
+                autoClickers += 1;
+                updateScore();
+                autoClickersElement.textContent = autoClickers;
+                startAutoClicker();
+                upgradeSound.play();
+            } else {
+                alert("Not enough score to buy an Auto Clicker!");
+            }
+        }
+
+        function startAutoClicker() {
+            setInterval(() => {
+                if (autoClickers > 0) {
+                    score += autoClickers;
+                    updateScore();
+                    checkLevelUp();
+                }
+            }, 1000);
+        }
+
+        function changeSkin() {
+            if (score >= 100) {
+                score -= 100;
+                coinSkins += 1;
+                updateScore();
+                coinSkinsElement.textContent = coinSkins;
+                upgradeSound.play();
+                changeCoinAppearance();
+            } else {
+                alert("Not enough score to change the coin skin!");
+            }
+        }
+
+        function changeCoinAppearance() {
+            if (coinSkins === 2) {
+                coin.style.border = '5px solid #ff4b5c';
+            } else if (coinSkins === 3) {
+                coin.style.border = '5px solid #ff7a89';
+            }
+        }
+
+        function changeBackground() {
+            if (score >= 200) {
+                score -= 200;
+                backgroundChanges += 1;
+                updateScore();
+                backgroundChangeSound.play();
+                if (backgroundChanges % 2 === 0) {
+                    body.style.background = 'linear-gradient(to top, #ff7a89, #ff4b5c)';
+                } else {
+                    body.style.background = 'radial-gradient(circle, rgba(75,0,130,1) 0%, rgba(0,0,0,1) 100%)';
+                }
+            } else {
+                alert("Not enough score to change background!");
+            }
+        }
+    </script>
+</body>
+</html>
